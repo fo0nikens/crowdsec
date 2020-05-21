@@ -6,6 +6,7 @@ package parser
 */
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"reflect"
@@ -15,6 +16,9 @@ import (
 	"github.com/crowdsecurity/crowdsec/pkg/types"
 
 	"strconv"
+
+	"encoding/gob"
+	"encoding/json"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/prometheus/client_golang/prometheus"
@@ -229,7 +233,19 @@ func stageidx(stage string, stages []string) int {
 	return -1
 }
 
+func Clone(a, b interface{}) {
+
+	buff := new(bytes.Buffer)
+	enc := gob.NewEncoder(buff)
+	dec := gob.NewDecoder(buff)
+	enc.Encode(a)
+	dec.Decode(b)
+}
+
 func /*(u types.UnixParser)*/ Parse(ctx UnixParserCtx, xp types.Event, nodes []Node) (types.Event, error) {
+
+	//you for real ? stage/parser/event_out
+	var fullTrace = make(map[string]map[string]types.Event)
 	var event types.Event
 	event = xp
 	/* the stage is undefined, probably line is freshly acquired, set to first stage !*/
@@ -253,6 +269,8 @@ func /*(u types.UnixParser)*/ Parse(ctx UnixParserCtx, xp types.Event, nodes []N
 	}
 
 	for _, stage := range ctx.Stages {
+		fullTrace[stage] = make(map[string]types.Event)
+
 		/* if the node is forward in stages, seek to its stage */
 		/* this is for example used by testing system to inject logs in post-syslog-parsing phase*/
 		if stageidx(event.Stage, ctx.Stages) > stageidx(stage, ctx.Stages) {
@@ -269,6 +287,7 @@ func /*(u types.UnixParser)*/ Parse(ctx UnixParserCtx, xp types.Event, nodes []N
 
 		isStageOK := false
 		for idx, node := range nodes {
+			//fullTrace[stage][node.Name] = types.Event{}
 			clog := log.WithFields(log.Fields{
 				"node-name": node.rn,
 				"stage":     event.Stage,
@@ -285,9 +304,21 @@ func /*(u types.UnixParser)*/ Parse(ctx UnixParserCtx, xp types.Event, nodes []N
 			if err != nil {
 				clog.Fatalf("Error while processing node : %v", err)
 			}
+			if ret == true {
+				evtcopy := types.Event{}
+				Clone(event, &evtcopy)
+				// x, err := json.MarshalIndent(event, "", " ")
+				// if err != nil {
+				// 	log.Fatalf("failed to marshal %s", err)
+				// }
+				fullTrace[stage][node.Name] = evtcopy
+				//clog.Printf("writting %s/%s = %+v", stage, node.Name, x.Meta)
+			}
 			clog.Tracef("node (%s) ret : %v", node.rn, ret)
 			if ret == true {
 				isStageOK = true
+				//fmt.Printf("%s_out")
+				//fmt.Printf("")
 			}
 			if ret == true && node.OnSuccess == "next_stage" {
 				clog.Debugf("node successful, stop end stage %s", stage)
@@ -308,6 +339,11 @@ func /*(u types.UnixParser)*/ Parse(ctx UnixParserCtx, xp types.Event, nodes []N
 	}
 
 	event.Process = true
+
+	fullTraceStr, err := json.MarshalIndent(fullTrace, "", " ")
+	if err == nil {
+		fmt.Printf("%s", fullTraceStr)
+	}
 	return event, nil
 
 }

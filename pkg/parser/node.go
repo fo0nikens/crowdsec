@@ -182,8 +182,7 @@ func (n *Node) process(p *types.Event, ctx UnixParserCtx) (bool, error) {
 		output, err := expr.Run(e, exprhelpers.GetExprEnv(map[string]interface{}{"evt": p}))
 		if err != nil {
 			clog.Warningf("failed to run whitelist expr : %v", err)
-			clog.Debugf("Event leaving node : ko")
-			return false, nil
+			continue
 		}
 		switch output.(type) {
 		case bool:

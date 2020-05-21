@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 
 	"io/ioutil"
@@ -50,14 +49,15 @@ func configureLogger(logMode string, logFolder string, logLevel log.Level) error
 			Compress:   true, //disabled by default
 		})
 		log.SetFormatter(&log.TextFormatter{TimestampFormat: "02-01-2006 15:04:05", FullTimestamp: true})
-	} else if logMode != "stdout" {
-		return fmt.Errorf("log mode '%s' unknown", logMode)
+	} else if logMode == "json" {
+		log.SetFormatter(&log.JSONFormatter{})
+	} else if logMode == "stdout" {
+		log.SetFormatter(&log.TextFormatter{FullTimestamp: true})
 	}
 
 	log.Printf("setting loglevel to %s", logLevel)
 	log.SetLevel(logLevel)
-	log.SetFormatter(&log.TextFormatter{FullTimestamp: true})
-	if logLevel >= log.InfoLevel {
+	if logLevel >= log.InfoLevel && (logMode == "file" || logMode == "stdout") {
 		log.SetFormatter(&log.TextFormatter{TimestampFormat: "02-01-2006 15:04:05", FullTimestamp: true})
 	}
 	if logLevel >= log.DebugLevel {
