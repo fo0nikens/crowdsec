@@ -18,15 +18,15 @@ type SignalOccurence struct {
 	Start_at        time.Time        `json:"start_at,omitempty"`                                              //first event (usually bucket creation time)
 	BanApplications []BanApplication `json:"ban_applications,omitempty" gorm:"foreignkey:SignalOccurenceID;association_foreignkey:ID"`
 	Stop_at         time.Time        `json:"stop_at,omitempty"` //last event (usually bucket overflow time)
-	Source          *Source          `json:"source"`            //`json:"source,omitempty"`
+	Source          *Source          `json:"source,omitempty"`  //`json:"source,omitempty"`
 	/*for db*/
-	Source_ip                           string `yaml:"Source_ip,omitempty"`
-	Source_range                        string
-	Source_AutonomousSystemNumber       string
-	Source_AutonomousSystemOrganization string
-	Source_Country                      string
-	Source_Latitude                     float64
-	Source_Longitude                    float64
+	Source_ip                           string  `yaml:"Source_ip,omitempty" json:"Source_ip,omitempty"`
+	Source_range                        string  `json:",omitempty"`
+	Source_AutonomousSystemNumber       string  `json:",omitempty"`
+	Source_AutonomousSystemOrganization string  `json:",omitempty"`
+	Source_Country                      string  `json:",omitempty"`
+	Source_Latitude                     float64 `json:",omitempty"`
+	Source_Longitude                    float64 `json:",omitempty"`
 	/*/for db*/
 	Sources map[string]Source `json:"sources,omitempty" gorm:"-"`
 	// Source_ip       string          `json:"src_ip,omitempty"`                                                                        //for now just the IP
@@ -39,5 +39,5 @@ type SignalOccurence struct {
 	Leak_speed time.Duration `json:"leak_speed,omitempty"`
 
 	Reprocess bool              //Reprocess, when true, will make the overflow being processed again as a fresh log would
-	Labels    map[string]string `gorm:"-"`
+	Labels    map[string]string `gorm:"-" json:",omitempty"`
 }

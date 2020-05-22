@@ -243,9 +243,7 @@ func Clone(a, b interface{}) {
 }
 
 func /*(u types.UnixParser)*/ Parse(ctx UnixParserCtx, xp types.Event, nodes []Node) (types.Event, error) {
-
-	//you for real ? stage/parser/event_out
-	var fullTrace = make(map[string]map[string]types.Event)
+	var fullTrace = make(map[string]map[string]types.Event) //stage/parser/event_out
 	var event types.Event
 	event = xp
 	/* the stage is undefined, probably line is freshly acquired, set to first stage !*/
@@ -307,18 +305,11 @@ func /*(u types.UnixParser)*/ Parse(ctx UnixParserCtx, xp types.Event, nodes []N
 			if ret == true {
 				evtcopy := types.Event{}
 				Clone(event, &evtcopy)
-				// x, err := json.MarshalIndent(event, "", " ")
-				// if err != nil {
-				// 	log.Fatalf("failed to marshal %s", err)
-				// }
 				fullTrace[stage][node.Name] = evtcopy
-				//clog.Printf("writting %s/%s = %+v", stage, node.Name, x.Meta)
 			}
 			clog.Tracef("node (%s) ret : %v", node.rn, ret)
 			if ret == true {
 				isStageOK = true
-				//fmt.Printf("%s_out")
-				//fmt.Printf("")
 			}
 			if ret == true && node.OnSuccess == "next_stage" {
 				clog.Debugf("node successful, stop end stage %s", stage)
