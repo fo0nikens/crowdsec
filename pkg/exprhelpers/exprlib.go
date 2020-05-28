@@ -28,12 +28,22 @@ func StartsWith(s string, pref string) bool {
 	return strings.HasPrefix(s, pref)
 }
 
+func Upper(s string) string {
+	return strings.ToUpper(s)
+}
+
 func EndsWith(s string, suff string) bool {
 	return strings.HasSuffix(s, suff)
 }
 
 func GetExprEnv(ctx map[string]interface{}) map[string]interface{} {
-	var ExprLib = map[string]interface{}{"Atof": Atof, "JsonExtract": JsonExtract, "JsonExtractLib": JsonExtractLib, "File": File, "RegexpInFile": RegexpInFile}
+	var ExprLib = map[string]interface{}{
+		"Atof":           Atof,
+		"JsonExtract":    JsonExtract,
+		"JsonExtractLib": JsonExtractLib,
+		"File":           File,
+		"RegexpInFile":   RegexpInFile,
+		"Upper":          Upper}
 	for k, v := range ctx {
 		ExprLib[k] = v
 	}
