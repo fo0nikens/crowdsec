@@ -1,0 +1,19 @@
+@@version
+..xp_cmdshell
+information_schema.tables
+/*
+union+select+
+union select 
+,NULL,NULL
+or '1'='1
+benchmark(
+load_file(
+substr(
+substring(
+SELECTCHAR(
+||CHR(
+DISTINCT(
+pg_sleep(
+sleep(
+UPPER(
+HEX(

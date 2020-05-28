@@ -1,0 +1,27 @@
+#this one will trigger a simple overflow
+lines:
+  - Line:
+      Labels:
+        type: testlog
+      Raw: xxheader VALUE1 trailing stuff
+    MarshaledTime: 2020-01-01T10:00:00Z
+    Meta:
+      source_ip: 1.2.3.4
+    Parsed:
+      GET_ARGS: This is not and SQLi bruv
+  - Line:
+      Labels:
+        type: testlog
+      Raw: xxheader VALUE2 trailing stuff
+    MarshaledTime: 2020-01-01T10:00:00Z
+    Meta:
+      source_ip: 1.2.3.5
+    Parsed:
+      GET_ARGS: This is an SQLi, give me your @@version please
+results:
+  - Overflow:
+      scenario: test/simple-trigger
+      Source_ip: 1.2.3.5
+      Events_count: 1
+
+

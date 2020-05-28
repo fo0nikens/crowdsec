@@ -1,0 +1,12 @@
+type: trigger
+debug: true
+name: test/simple-trigger
+data:
+  - source_url: https://invalid.com/test.list
+    dest_file: ./sqli_probing_patterns.txt
+description: "Simple trigger with external data"
+filter: "any(File('./sqli_probing_patterns.txt'), {Upper(evt.Parsed.GET_ARGS) contains Upper(#)})"
+groupby: evt.Meta.source_ip
+labels:
+ type: sqli_probing
+
