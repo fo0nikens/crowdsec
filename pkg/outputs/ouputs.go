@@ -27,60 +27,6 @@ type Output struct {
 	bManager *cwplugin.BackendManager
 }
 
-/*
-Transform an overflow (SignalOccurence) and a Profile into a BanOrder
-*/
-func OvflwToOrder(sig types.SignalOccurence, prof types.Profile) (*types.BanOrder, error, error) {
-	var ordr types.BanOrder
-	var warn error
-
-	//Identify remediation type
-	if prof.Remediation.Ban {
-		ordr.MeasureType = "ban"
-	} else if prof.Remediation.Slow {
-		ordr.MeasureType = "slow"
-	} else if prof.Remediation.Captcha {
-		ordr.MeasureType = "captcha"
-	} else {
-		/*if the profil has no remediation, no order */
-		return nil, nil, fmt.Errorf("no remediation")
-	}
-	ordr.MeasureSource = "local"
-	ordr.Reason = sig.Scenario
-	//Identify scope
-	v, ok := sig.Labels["scope"]
-	if !ok {
-		//if remediation_scope isn't specified, it's IP
-		v = "ip"
-	}
-	ordr.Scope = v
-	asn, err := strconv.Atoi(sig.Source.AutonomousSystemNumber)
-	if err != nil {
-		warn = fmt.Errorf("invalid as number : %s : %s", sig.Source.AutonomousSystemNumber, err)
-	}
-	ordr.TargetAS = asn
-	ordr.TargetASName = sig.Source.AutonomousSystemOrganization
-	ordr.TargetIP = sig.Source.Ip
-	ordr.TargetRange = sig.Source.Range
-	ordr.TargetCountry = sig.Source.Country
-	switch v {
-	case "range":
-		ordr.TxtTarget = ordr.TargetRange.String()
-	case "ip":
-		ordr.TxtTarget = ordr.TargetIP.String()
-	case "as":
-		ordr.TxtTarget = fmt.Sprintf("ban as %d (unsupported)", ordr.TargetAS)
-	case "country":
-		ordr.TxtTarget = fmt.Sprintf("ban country %s (unsupported)", ordr.TargetCountry)
-	default:
-		log.Errorf("Unknown remediation scope '%s'", sig.Labels["remediation_Scope"])
-		return nil, fmt.Errorf("unknown remediation scope"), nil
-	}
-	//Set deadline
-	ordr.Until = sig.Stop_at.Add(prof.Remediation.TimeDuration)
-	return &ordr, nil, warn
-}
-
 func (o *Output) FlushAll() {
 	if o.API != nil {
 		if err := o.API.Flush(); err != nil {
@@ -134,7 +80,7 @@ func (o *Output) ProcessOutput(sig types.SignalOccurence, profiles []types.Profi
 			logger.Debugf("eval(TRUE) '%s'", profile.Filter)
 		}
 		/*the filter was ok*/
-		ordr, err, warn := OvflwToOrder(sig, profile)
+		ordr, err, warn := types.OvflwToOrder(sig, profile)
 		if err != nil {
 			logger.Errorf("Unable to turn Overflow to Order : %v", err)
 			return err
