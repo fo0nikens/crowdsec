@@ -2,10 +2,11 @@ package types
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"strconv"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 //BanOrder is what is generated from a SignalOccurence : it describes what action to take
